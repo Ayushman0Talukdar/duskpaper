@@ -7,8 +7,10 @@ struct SettingsView: View {
     @EnvironmentObject private var library: LibraryStore
 
     var body: some View {
-        Form {
-            Section("Playback") {
+        VStack(spacing: 0) {
+            GlassNavBar(title: "Settings")
+            Form {
+                Section("Playback") {
                 Picker("Scaling", selection: $state.settings.gravity) {
                     ForEach(VideoGravity.allCases, id: \.self) { gravity in
                         Text(gravity.displayName).tag(gravity)
@@ -148,9 +150,11 @@ struct SettingsView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+            }
+            .formStyle(.grouped)
+            .scrollContentBackground(.hidden)
+            .frame(maxWidth: 720)
+            .frame(maxWidth: .infinity)
         }
-        .formStyle(.grouped)
-        .frame(maxWidth: .infinity)
-        .background(Color(nsColor: .windowBackgroundColor))
     }
 }

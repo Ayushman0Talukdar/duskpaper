@@ -47,77 +47,26 @@ struct LibraryView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            header
-            Divider()
-            content
-        }
-        .background(Color(nsColor: .windowBackgroundColor))
-    }
-
-    // MARK: - Header
-
-    private var header: some View {
-        ViewThatFits(in: .horizontal) {
-            wideHeader
-            compactHeader
-        }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 14)
-    }
-
-    /// One row: title, filters, search and actions. Used when the window is wide.
-    private var wideHeader: some View {
-        HStack(spacing: 12) {
-            title
-            filterPicker
-                .frame(width: 280)
-            Spacer(minLength: 12)
-            searchField
-            addButton
-            moreMenu
-        }
-    }
-
-    /// Two rows: actions next to the title, filters below full-width.
-    /// Used when the window is too narrow for everything on one line.
-    private var compactHeader: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 12) {
-                title
-                Spacer(minLength: 8)
+            GlassNavBar(title: "Library") {
+                FilterPills(selection: $filter)
                 searchField
                 addButton
                 moreMenu
             }
-            filterPicker
-                .frame(maxWidth: 320)
+            content
         }
     }
 
-    private var title: some View {
-        Text("Library")
-            .font(.system(size: 22, weight: .semibold))
-            .lineLimit(1)
-            .fixedSize()
-    }
-
-    private var filterPicker: some View {
-        Picker("", selection: $filter) {
-            ForEach(Filter.allCases) { option in
-                Text(option.title).tag(option)
-            }
-        }
-        .pickerStyle(.segmented)
-        .labelsHidden()
-    }
+    // MARK: - Top bar controls
 
     private var searchField: some View {
         HStack(spacing: 6) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(.secondary)
-                .font(.system(size: 12))
+                .font(.system(size: 11))
             TextField("Search", text: $searchText)
                 .textFieldStyle(.plain)
+                .font(.system(size: 12))
             if !searchText.isEmpty {
                 Button {
                     searchText = ""
@@ -129,19 +78,22 @@ struct LibraryView: View {
                 .font(.system(size: 11))
             }
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal, 9)
         .padding(.vertical, 5)
-        .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 7))
-        .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(Color.secondary.opacity(0.18)))
-        .frame(minWidth: 110, idealWidth: 170, maxWidth: 220)
+        .background(Color.primary.opacity(0.06), in: Capsule())
+        .frame(width: 150)
     }
 
     private var addButton: some View {
-        Button {
-            importFiles()
-        } label: {
-            Label("Add Files", systemImage: "plus")
+        Button(action: importFiles) {
+            Label("Add", systemImage: "plus")
+                .font(.system(size: 12, weight: .semibold))
         }
+        .foregroundStyle(.white)
+        .padding(.horizontal, 13)
+        .padding(.vertical, 6)
+        .background(Theme.accent, in: Capsule())
+        .buttonStyle(.plain)
         .help("Add video or image files to your library")
     }
 
@@ -152,9 +104,14 @@ struct LibraryView: View {
                 NSWorkspace.shared.open(Paths.managedMediaDirectory)
             }
         } label: {
-            Label("More", systemImage: "ellipsis.circle")
+            Image(systemName: "ellipsis")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(.secondary)
+                .frame(width: 28, height: 28)
+                .background(Color.primary.opacity(0.06), in: Circle())
         }
         .menuStyle(.borderlessButton)
+        .menuIndicator(.hidden)
         .fixedSize()
     }
 
@@ -180,7 +137,7 @@ struct LibraryView: View {
                         )
                     }
                 }
-                .padding(20)
+                .padding(16)
             }
         }
     }
@@ -236,6 +193,37 @@ struct LibraryView: View {
         if panel.runModal() == .OK, let url = panel.url {
             state.importFolder(url)
         }
+    }
+}
+
+/// The pill filter control in the library's top bar.
+private struct FilterPills: View {
+    @Binding var selection: LibraryView.Filter
+
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(LibraryView.Filter.allCases) { option in
+                Button {
+                    withAnimation(.easeOut(duration: 0.15)) { selection = option }
+                } label: {
+                    Text(option.title)
+                        .font(.system(size: 12, weight: selection == option ? .semibold : .regular))
+                        .foregroundStyle(selection == option ? Color.primary : Color.secondary)
+                        .padding(.horizontal, 11)
+                        .padding(.vertical, 5)
+                        .background {
+                            if selection == option {
+                                Capsule().fill(Color.primary.opacity(0.1))
+                            }
+                        }
+                        .contentShape(Capsule())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(2)
+        .background(Color.primary.opacity(0.06), in: Capsule())
+        .animation(.easeOut(duration: 0.15), value: selection)
     }
 }
 

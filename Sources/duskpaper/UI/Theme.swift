@@ -9,6 +9,30 @@ enum Theme {
     static let sidebarWidth: CGFloat = 208
 }
 
+/// The top bar of a tab. It draws no background of its own, so the sidebar,
+/// the bar and the content below all read as one continuous glass panel.
+struct GlassNavBar<Trailing: View>: View {
+    let title: String
+    @ViewBuilder var trailing: Trailing
+
+    init(title: String, @ViewBuilder trailing: () -> Trailing = { EmptyView() }) {
+        self.title = title
+        self.trailing = trailing()
+    }
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Text(title)
+                .font(.system(size: 15, weight: .semibold))
+                .lineLimit(1)
+            Spacer(minLength: 12)
+            trailing
+        }
+        .frame(height: 52)
+        .padding(.horizontal, 16)
+    }
+}
+
 /// A small capsule used for media-type and duration badges.
 struct Badge: View {
     let text: String

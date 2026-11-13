@@ -9,24 +9,23 @@ struct DisplaysView: View {
     @State private var assigning: DisplayInfo?
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                Text("Displays")
-                    .font(.system(size: 22, weight: .semibold))
+        VStack(spacing: 0) {
+            GlassNavBar(title: "Displays")
+            ScrollView {
+                VStack(alignment: .leading, spacing: 18) {
+                    Text("Choose a wallpaper for each display. Displays left on “Default” follow the wallpaper applied to all screens.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: 560, alignment: .leading)
 
-                Text("Choose a wallpaper for each display. Displays left on “Default” follow the wallpaper applied to all screens.")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: 560, alignment: .leading)
-
-                ForEach(state.displays) { display in
-                    DisplayRow(display: display, assigning: $assigning)
+                    ForEach(state.displays) { display in
+                        DisplayRow(display: display, assigning: $assigning)
+                    }
                 }
+                .padding(20)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(20)
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(Color(nsColor: .windowBackgroundColor))
         .sheet(item: $assigning) { display in
             WallpaperPickerSheet(display: display) { wallpaper in
                 state.apply(to: display.id, wallpaper: wallpaper)
@@ -50,7 +49,7 @@ private struct DisplayRow: View {
         HStack(spacing: 16) {
             ZStack {
                 RoundedRectangle(cornerRadius: 10)
-                    .fill(Color.secondary.opacity(0.12))
+                    .fill(Color.primary.opacity(0.08))
                     .frame(width: 128, height: 80)
                 Image(systemName: "display")
                     .font(.system(size: 26, weight: .light))
@@ -102,8 +101,8 @@ private struct DisplayRow: View {
             }
         }
         .padding(14)
-        .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Color.secondary.opacity(0.15)))
+        .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: Theme.cardCornerRadius))
+        .overlay(RoundedRectangle(cornerRadius: Theme.cardCornerRadius).strokeBorder(Color.primary.opacity(0.08)))
     }
 }
 

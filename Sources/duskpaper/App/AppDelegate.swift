@@ -81,6 +81,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         window.title = "duskpaper"
         window.setContentSize(NSSize(width: 1040, height: 660))
         window.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]
+        // The window chrome is drawn by SwiftUI; the title bar becomes part of
+        // the glass panel, and the desktop shows through behind it.
+        window.titlebarAppearsTransparent = true
+        window.titleVisibility = .hidden
+        window.isOpaque = false
+        window.backgroundColor = .clear
+        window.isMovableByWindowBackground = true
         window.minSize = NSSize(width: 820, height: 520)
         window.center()
         window.isReleasedWhenClosed = false
