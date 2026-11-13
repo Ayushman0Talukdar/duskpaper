@@ -22,7 +22,9 @@ for arg in "$@"; do
 done
 
 APP_NAME="duskpaper"
-BUILD_DIR="$ROOT/build"
+# .noindex suffix keeps Spotlight from indexing build output, so searching
+# "duskpaper" in Finder doesn't turn up app bundles inside the project.
+BUILD_DIR="$ROOT/build.noindex"
 APP_DIR="$BUILD_DIR/$APP_NAME.app"
 CONTENTS="$APP_DIR/Contents"
 
