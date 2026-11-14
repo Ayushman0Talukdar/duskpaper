@@ -119,9 +119,11 @@ final class WallpaperEngine: ObservableObject {
                 return new
             }()
 
+            let adjustments = settings.adjustments(for: displayID)
             player.play(
                 url: playableURL,
-                gravity: settings.gravity,
+                gravity: adjustments.gravity ?? settings.gravity,
+                adjustments: adjustments,
                 muted: settings.isMuted,
                 volume: settings.volume,
                 rate: settings.playbackSpeed
@@ -130,7 +132,10 @@ final class WallpaperEngine: ObservableObject {
             assignments[displayID] = wallpaper.id
 
             // Keep the static desktop picture in sync with the overlay.
-            if let still = await StillFrameService.stillFrame(for: playableURL) {
+            if let still = await StillFrameService.stillFrame(
+                for: playableURL,
+                adjustments: adjustments
+            ) {
                 StillFrameService.applyDesktopPicture(stillURL: still, to: screen)
             }
         }
@@ -197,8 +202,11 @@ final class WallpaperEngine: ObservableObject {
     }
 
     private func applySettingsToPlayers() {
-        for player in players.values {
-            player.update(gravity: settings.gravity)
+        for displayID in players.keys {
+            guard let player = players[displayID] else { continue }
+            let adjustments = settings.adjustments(for: displayID)
+            player.update(gravity: adjustments.gravity ?? settings.gravity)
+            player.update(adjustments: adjustments)
             player.update(muted: settings.isMuted, volume: settings.volume)
             player.update(rate: settings.playbackSpeed)
         }

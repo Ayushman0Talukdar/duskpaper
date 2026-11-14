@@ -38,6 +38,7 @@ Engine Team, and it does not play Workshop items; it plays your files.
 - A different wallpaper on every display, or one wallpaper everywhere. Built
   for dual-monitor setups and works the same with three or more.
 - Per-display scaling: fill, fit, stretch or centre.
+- Per-display visual adjustments: contrast, brightness, saturation, warmth, hue and gamma, with quick presets (Standard, Vivid, Soft, Dimmed, Warm, Cool, Mono) and a reset — tuned independently for each display.
 - Playlists: cycle through your library on a schedule, in order or shuffled.
 - Still images become live. A still gets a slow, seamless Ken Burns push so it
   animates instead of sitting frozen.

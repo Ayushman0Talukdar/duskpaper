@@ -12,11 +12,14 @@ import UniformTypeIdentifiers
 /// * pausing (screen locked, display asleep) still leaves a correct-looking
 ///   desktop behind.
 enum StillFrameService {
+    /// One cache entry per (video path, adjustment signature).
     private static var cache: [String: URL] = [:]
 
-    /// Extracts (and caches) the still frame for a video.
-    static func stillFrame(for url: URL) async -> URL? {
-        let key = url.path
+    /// Extracts (and caches) the still frame for a video. When `adjustments`
+    /// carries colour/tone changes they are applied to the extracted frame so
+    /// the static desktop picture matches the adjusted overlay.
+    static func stillFrame(for url: URL, adjustments: DisplayAdjustments = .default) async -> URL? {
+        let key = "\(url.path)|\(adjustments.cacheSignature)"
         if let cached = cache[key], FileManager.default.fileExists(atPath: cached.path) {
             return cached
         }
@@ -31,8 +34,12 @@ enum StillFrameService {
         let time = CMTime(seconds: 0.1, preferredTimescale: 600)
         do {
             let result = try await generator.image(at: time)
-            let cgImage = result.image
-            let destination = Paths.stillFrameDirectory.appendingPathComponent("\(url.deletingPathExtension().lastPathComponent)-\(abs(url.path.hashValue)).png")
+            var cgImage = result.image
+            if adjustments.hasColorAdjustments {
+                cgImage = adjustments.apply(to: cgImage)
+            }
+            let signature = adjustments.cacheSignature
+            let destination = Paths.stillFrameDirectory.appendingPathComponent("\(url.deletingPathExtension().lastPathComponent)-\(abs(url.path.hashValue))-\(signature.hashValue).png")
             guard let data = representation(of: cgImage) else { return nil }
             try data.write(to: destination, options: .atomic)
             cache[key] = destination

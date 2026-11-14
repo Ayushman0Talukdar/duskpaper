@@ -58,6 +58,7 @@ final class PlayerLayerView: NSView {
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         wantsLayer = true
+        layerUsesCoreImageFilters = true
         playerLayer.videoGravity = .resizeAspectFill
         playerLayer.backgroundColor = NSColor.black.cgColor
         // AppKit keeps the backing layer sized to the view's bounds.
@@ -85,6 +86,7 @@ final class DisplayPlayer {
     private var isMuted = true
     private var volume: Float = 0.5
     private var gravity: VideoGravity = .fill
+    private var adjustments: DisplayAdjustments = .default
 
     init(displayID: CGDirectDisplayID, level: NSWindow.Level) {
         self.displayID = displayID
@@ -161,6 +163,7 @@ final class DisplayPlayer {
         window.setFrame(screen.frame, display: true)
         window.orderFrontRegardless()
         applyGravity()
+        applyAdjustments()
     }
 
     func hide() {
@@ -174,8 +177,16 @@ final class DisplayPlayer {
     // MARK: - Playback
 
     /// Starts (or restarts) playback of the given video on this display.
-    func play(url: URL, gravity: VideoGravity, muted: Bool, volume: Double, rate: Double) {
+    func play(
+        url: URL,
+        gravity: VideoGravity,
+        adjustments: DisplayAdjustments = .default,
+        muted: Bool,
+        volume: Double,
+        rate: Double
+    ) {
         self.gravity = gravity
+        self.adjustments = adjustments
         self.isMuted = muted
         self.volume = Float(volume)
         self.playbackRate = Float(rate)
@@ -207,6 +218,7 @@ final class DisplayPlayer {
         let view = window.contentView as? PlayerLayerView
         view?.playerLayer.player = player
         applyGravity()
+        applyAdjustments()
 
         looper = AVPlayerLooper(player: player, templateItem: item)
 
@@ -259,6 +271,11 @@ final class DisplayPlayer {
         applyGravity()
     }
 
+    func update(adjustments: DisplayAdjustments) {
+        self.adjustments = adjustments
+        applyAdjustments()
+    }
+
     func update(muted: Bool, volume: Double) {
         self.isMuted = muted
         self.volume = Float(volume)
@@ -270,6 +287,13 @@ final class DisplayPlayer {
         self.playbackRate = Float(rate)
         player?.defaultRate = Float(rate)
         if isPlaying { player?.rate = Float(rate) }
+    }
+
+    /// Applies the stored colour/tone adjustments as Core Image filters on the
+    /// player layer. Runs live, even while playback is paused.
+    private func applyAdjustments() {
+        guard let view = window?.contentView as? PlayerLayerView else { return }
+        view.contentFilters = adjustments.makeCIFilters()
     }
 
     private func applyGravity() {

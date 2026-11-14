@@ -117,6 +117,24 @@ final class AppState: ObservableObject {
         await engine.restoreAssignments()
     }
 
+    // MARK: - Per-display adjustments
+
+    func adjustments(for displayID: CGDirectDisplayID) -> DisplayAdjustments {
+        settings.adjustments(for: displayID)
+    }
+
+    func setAdjustments(_ adjustments: DisplayAdjustments, for displayID: CGDirectDisplayID) {
+        var s = settings
+        s.perDisplayAdjustments[String(displayID)] = adjustments
+        settings = s
+    }
+
+    func resetAdjustments(for displayID: CGDirectDisplayID) {
+        var s = settings
+        s.perDisplayAdjustments.removeValue(forKey: String(displayID))
+        settings = s
+    }
+
     // MARK: - Library
 
     func importFiles(_ urls: [URL]) {
